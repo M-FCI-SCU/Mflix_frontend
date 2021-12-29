@@ -3,10 +3,22 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { ApolloClient, ApolloProvider,InMemoryCache } from "@apollo/client";
+import splitLink from "./ApolloWebSocket"
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache(),
+  // uri: "http://localhost:4000/graphql",
+  // headers: {
+  //   authorization: localStorage.getItem("token") || ""
+  // }
+});
 
 ReactDOM.render(
   <React.StrictMode>
+     <ApolloProvider client={client}>
       <App />
+     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

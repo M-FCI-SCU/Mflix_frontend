@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router";
 import LandingPage from "../views/LandingPage";
 import Login from "../views/Login"
 import Register from "../views/Register"
+import { useAuth } from "../context/AuthContext"
 
 export default function AppRouter() {
     return (
@@ -14,8 +15,16 @@ export default function AppRouter() {
                     </PrivateRoute>
                 }
             />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={
+                <RedirectToHomeIfWeAuth>
+                    <Login />
+                </RedirectToHomeIfWeAuth>
+            } />
+            <Route path="/register" element={
+                <RedirectToHomeIfWeAuth>
+                    <Register />
+                </RedirectToHomeIfWeAuth>
+            } />
             <Route
                 path="*"
                 element={<Navigate to="/" />}
@@ -25,6 +34,10 @@ export default function AppRouter() {
 }
 
 function PrivateRoute({ children }) {
-    const auth = true
-    return auth ? children : <Navigate to="/login" />;
+    let { loggedIn } = useAuth()
+    return loggedIn ? children : <Navigate to="/login" />;
+}
+function RedirectToHomeIfWeAuth({ children }) {
+    let { loggedIn } = useAuth()
+    return loggedIn ? <Navigate to="/" /> : children;
 }

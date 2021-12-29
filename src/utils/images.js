@@ -10,8 +10,9 @@ import intersteller from "../assets/intersteller.jpg"
 import money_heist from "../assets/lacasa.jpg"
 import planet_of_apes from "../assets/war.jpg"
 import zootopia from "../assets/avengers.jpg"
+import imageNotFound from "../assets/image-not-found.jpg"
 
-export const MoviesImage = [
+export {
     avengers,
     batman_vs_superman,
     chernobyl,
@@ -24,4 +25,5 @@ export const MoviesImage = [
     money_heist,
     planet_of_apes,
     zootopia,
-]
+    imageNotFound
+}
