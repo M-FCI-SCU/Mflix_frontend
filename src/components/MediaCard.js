@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Moment from 'react-moment';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -7,9 +8,9 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 //import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import { ThumbUp, Comment, Share } from '@mui/icons-material';
+import { ThumbUp, Comment, Share, Delete } from '@mui/icons-material';
 import { imageNotFound } from "../utils/images"
-import { Avatar, Collapse, Divider, Grid, Paper, TextField } from '@mui/material';
+import { Avatar, Collapse, Divider, Grid, Paper, TextField, Box, IconButton } from '@mui/material';
 import { deepOrange, deepPurple } from '@mui/material/colors';
 import { gql, useMutation, useSubscription } from '@apollo/client';
 import { useAuth } from "../context/AuthContext"
@@ -22,9 +23,18 @@ const CREATE_COMMENT = gql`
   }
 `;
 
+const DELETE_COMMENT = gql`
+mutation DeleteCommentQuery($movieId: String, $commentId: String) {
+  deleteComment(movieId: $movieId, commentId: $commentId){
+    _id
+    movie_id
+  }
+}
+`;
 
-export default function MediaCard({ movie }) {
-  const [createComment, { data, loading, error }] = useMutation(CREATE_COMMENT);
+export default function MediaCard({ movie, openAlertDialog }) {
+  const [createComment] = useMutation(CREATE_COMMENT);
+  const [deleteComment, { data, error }] = useMutation(DELETE_COMMENT);
   const [poster, setPoster] = React.useState(null)
   const [commentText, setCommentText] = React.useState("")
   const [commentToggle, setCommentToggle] = React.useState(false)
@@ -42,6 +52,7 @@ export default function MediaCard({ movie }) {
     fetchData();
 
   }, [])
+
   const checkCommentEnterHandler = (event) => {
     if (event.key != 'Enter') {
       return
@@ -59,6 +70,15 @@ export default function MediaCard({ movie }) {
       }
     })
   }
+  const deleteCommentHandler = async (comment) => {
+    try {
+      await deleteComment({ variables: { movieId: movie._id, commentId: comment._id } })
+    } catch (err) {
+      console.log(err.message)
+      openAlertDialog(err.message)
+    }
+  }
+
   return (
     <Card sx={{ marginBottom: '20px' }}>
       <div
@@ -120,9 +140,15 @@ export default function MediaCard({ movie }) {
                   padding: '5px 15px 15px 15px',
                   borderRadius: '12px'
                 }}>
-                  <Typography variant="h6" component="div">{comment.name}</Typography>
+                  <Box sx={{
+                    display: 'flex', justifyContent: 'space-between'
+                  }}>
+                    <Typography variant="h6" component="div">{comment.name}</Typography>
+                    {(user.email == comment.email) && <IconButton onClick={() => deleteCommentHandler(comment)} color="primary" aria-label="delete comment" component="span"><Delete></Delete></IconButton>}
+                  </Box>
                   {comment.text}
                 </span>
+                <Typography sx={{ml:'10px'}} variant="caption" display={"block"}>  <Moment interval={1000} fromNow ago>{new Date(parseInt(comment.date)).toISOString()}</Moment></Typography>
               </Grid>
             </Grid>
           </div>)}

@@ -8,6 +8,8 @@ import {
 const CHECKUSEREXIST = gql`
   query checkUserExistQuery{
     checkUserExist{
+      _id
+      name
       email
     }
   }
@@ -16,39 +18,43 @@ const AuthContext = createContext({});
 
 
 const AuthProvider = (props) => {
-  let isAuth = localStorage.getItem('isAuth') ? true : false
-  const [loggedIn, setLoggedIn] = useState(isAuth);
+  const [isAuth, setAuh] = useState(false);
   const [user, setUser] = useState(null);
-  const {data} = useQuery(CHECKUSEREXIST)
+  const { data, loading } = useQuery(CHECKUSEREXIST)
 
 
   useEffect(() => {
     // Pull saved login state from localStorage / AsyncStorage
     if (data) {
-      setLoggedIn(true)
-      setUser({...data.checkUserExist})
+      if (localStorage.getItem('isAuth')) {
+        setAuh(true)
+      } else {
+        setAuh(false)
+      }
+      setUser({ ...data.checkUserExist })
     }
   }, [data]);
 
   const setLogin = (data) => {
     if (data && data.login) {
       localStorage.setItem('token', data.login.token);
-      localStorage.setItem('email', data.login.email);
       localStorage.setItem('isAuth', true);
-      setLoggedIn(true)
+      setAuh(true)
+      setUser({ id: data.login._id, email: data.login.email, name: data.login.name });
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token')
-    localStorage.removeItem('email')
     localStorage.removeItem('isAuth');
-    setLoggedIn(false)
+    setAuh(false)
+    setUser(null)
   };
 
   const authContextValue = {
+    authLoading: loading,
     setLogin,
-    loggedIn,
+    isAuth,
     logout,
     user
   };
